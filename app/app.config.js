@@ -1,42 +1,30 @@
-/// <reference types="node" />
-import fs from 'node:fs';
-import path from 'node:path';
-import type { ConfigContext, ExpoConfig } from 'expo/config';
-
+// @ts-check
 /**
- * White-label app config. The active client comes from the CLIENT env variable
- * (set per build profile / command) or the .client file written by `npm run use-client`.
+ * White-label app config (plain JavaScript so every Node.js build and EAS CLI can read it).
+ * The active client comes from the CLIENT env variable or the .client file written by
+ * `npm run use-client -- <slug>`.
  */
-type Client = {
-  slug: string;
-  name: string;
-  siteUrl: string;
-  bundleId: string;
-  scheme: string;
-  version: string;
-  buildNumber: number;
-  primary: string;
-  background: string;
-  easProjectId?: string;
-  owner?: string;
-};
+const fs = require('fs');
+const path = require('path');
 
-function activeClient(): Client {
-  const fromFile = fs.existsSync(path.join(__dirname, '.client')) ? fs.readFileSync(path.join(__dirname, '.client'), 'utf8').trim() : '';
+function activeClient() {
+  const clientFile = path.join(__dirname, '.client');
+  const fromFile = fs.existsSync(clientFile) ? fs.readFileSync(clientFile, 'utf8').trim() : '';
   const slug = (process.env.CLIENT || fromFile || 'ceramicbysarah').trim();
   const file = path.join(__dirname, 'clients', slug, 'client.json');
   if (!fs.existsSync(file)) {
     throw new Error(`Client "${slug}" not found. Run: npm run client -- https://your-store.com`);
   }
-  return JSON.parse(fs.readFileSync(file, 'utf8')) as Client;
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function asset(slug: string, file: string, fallback: string) {
+function asset(slug, file, fallback) {
   const p = `./clients/${slug}/${file}`;
   return fs.existsSync(path.join(__dirname, p)) ? p : fallback;
 }
 
-export default ({ config }: ConfigContext): ExpoConfig => {
+/** @param {import('expo/config').ConfigContext} ctx @returns {import('expo/config').ExpoConfig} */
+module.exports = ({ config }) => {
   const c = activeClient();
   const icon = asset(c.slug, 'icon.png', './assets/icon.png');
   const splash = asset(c.slug, 'splash.png', './assets/splash-icon.png');
@@ -58,9 +46,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       buildNumber: String(c.buildNumber),
       supportsTablet: true,
       config: { usesNonExemptEncryption: false },
-      infoPlist: {
-        ITSAppUsesNonExemptEncryption: false,
-      },
+      infoPlist: { ITSAppUsesNonExemptEncryption: false },
     },
     android: {
       package: c.bundleId,
@@ -90,14 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           dark: { image: splash, backgroundColor: '#0F1115' },
         },
       ],
-      [
-        'expo-notifications',
-        {
-          icon: notif,
-          color: c.primary,
-          defaultChannel: 'default',
-        },
-      ],
+      ['expo-notifications', { icon: notif, color: c.primary, defaultChannel: 'default' }],
     ],
     experiments: { typedRoutes: false },
     extra: {
