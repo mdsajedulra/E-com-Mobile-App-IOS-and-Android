@@ -79,6 +79,9 @@ module.exports = ({ config }) => {
       ['expo-notifications', { icon: notif, color: c.primary, defaultChannel: 'default' }],
     ],
     experiments: { typedRoutes: false },
+    // Over-the-air updates (EAS Update): ship JS fixes without a new store release.
+    runtimeVersion: { policy: 'appVersion' },
+    updates: c.easProjectId ? { url: `https://u.expo.dev/${c.easProjectId}` } : undefined,
     extra: {
       client: c.slug,
       siteUrl: c.siteUrl,
