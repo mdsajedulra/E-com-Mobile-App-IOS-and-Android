@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { CartLine, Totals } from '@/components/cart';
 import { Screen } from '@/components/layout';
@@ -207,7 +207,7 @@ export default function Checkout() {
 
   const renderField = (f: CheckoutField) => {
     const label = f.label + (f.required || (f.key === 'email' && co.email_required) ? '' : ` (${t('optional')})`);
-    const common = { key: f.key, label, error: errors[f.key] };
+    const common = { label, error: errors[f.key] };
     if (f.type === 'state') {
       return (
         <SelectField
@@ -275,7 +275,11 @@ export default function Checkout() {
       <Txt size={17} weight="heading" style={{ marginBottom: 12 }}>
         {t('deliveryDetails')}
       </Txt>
-      <Card>{fields.map(renderField)}</Card>
+      <Card>
+        {fields.map((f) => (
+          <Fragment key={f.key}>{renderField(f)}</Fragment>
+        ))}
+      </Card>
 
       {cart?.needs_shipping && rates?.shipping_rates?.length ? (
         <>

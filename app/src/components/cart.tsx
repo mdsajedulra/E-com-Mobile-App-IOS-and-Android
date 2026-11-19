@@ -127,7 +127,9 @@ export function Totals({ cart }: { cart: Cart }) {
           )
         : null}
       {Number(cart.totals.total_discount) > 0 ? line(t('discount'), '-' + money(cart.totals.total_discount, m), false, c.success) : null}
-      {cart.fees?.map((f) => line(decode(f.name), money(f.totals.total, m)))}
+      {cart.fees?.map((f) => (
+        <View key={f.key}>{line(decode(f.name), money(f.totals.total, m))}</View>
+      ))}
       {Number(cart.totals.total_tax) > 0 ? line(t('tax'), money(cart.totals.total_tax, m)) : null}
       <Divider />
       {line(t('total'), money(cart.totals.total_price, m), true)}

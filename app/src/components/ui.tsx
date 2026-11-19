@@ -7,6 +7,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -419,27 +420,31 @@ export function SelectField({
         {options.length > 8 ? (
           <Input icon="search" placeholder={t('search')} value={q} onChangeText={setQ} autoCorrect={false} />
         ) : null}
-        <Animated.FlatList
-          data={filtered}
-          keyExtractor={(o) => o.value}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
+        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {filtered.map((item, i) => (
             <Pressable
+              key={item.value}
               onPress={() => {
                 onChange(item.value);
                 setOpen(false);
                 setQ('');
               }}
-              style={({ pressed }) => ({ paddingVertical: 14, opacity: pressed ? 0.6 : 1, flexDirection: 'row', alignItems: 'center' })}
+              style={({ pressed }) => ({
+                paddingVertical: 14,
+                opacity: pressed ? 0.6 : 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderTopWidth: i ? StyleSheet.hairlineWidth : 0,
+                borderTopColor: c.border,
+              })}
             >
               <Txt style={{ flex: 1 }} weight={item.value === value ? 'bold' : 'regular'} color={item.value === value ? c.primaryText : undefined}>
                 {item.label}
               </Txt>
               {item.value === value ? <Ionicons name="checkmark" size={20} color={c.primaryText} /> : null}
             </Pressable>
-          )}
-          ItemSeparatorComponent={() => <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: c.border }} />}
-        />
+          ))}
+        </ScrollView>
       </Sheet>
     </View>
   );
